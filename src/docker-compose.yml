@@ -1,0 +1,22 @@
+services:
+  orthanc:
+    image: orthancteam/orthanc:latest
+    ports:
+      - "8042:8042"   # REST API / web UI
+      - "4242:4242"   # DICOM via C convention
+    volumes:
+      - orthanc-data:/var/lib/orthanc/db
+    restart: unless-stopped
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ORTHANC_URL=http://orthanc:8042
+    depends_on:
+      - orthanc
+    restart: unless-stopped
+
+volumes:
+  orthanc-data:
