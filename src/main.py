@@ -1,29 +1,44 @@
+import logging
+import httpx
 from fastapi import FastAPI
-import requests
-import pydicom
-import io
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from app.config import ORTHANC_URL, orthanc_auth
+from app.routers import studies, instances, upload, forward, jobs, admin
 
-ORTHANC = "http://localhost:8042"
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-@app.get("/")
+app = FastAPI(
+    title="MSV-med PACS API",
+    description="Upload, forward, anonymize, and query DICOM studies via Orthanc.",
+    version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # TODO:Restrict in production
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(studies.router)
+app.include_router(instances.router)
+app.include_router(upload.router)
+app.include_router(forward.router)
+app.include_router(jobs.router)
+app.include_router(admin.router)
+
+
+@app.get("/", tags=["Health"])
 def root():
-    return {"status": "API running"}
+    return {"status": "MSV-med API running", "version": "1.0.0"}
 
-@app.get("/studies")
-def list_studies():
-    r = requests.get(f"{ORTHANC}/studies")
-    return r.json()
 
-@app.get("/instances/{instance_id}")
-def get_instance(instance_id: str):
-    r = requests.get(f"{ORTHANC}/instances/{instance_id}/file")
-    
-    dicom_bytes = io.BytesIO(r.content)
-    ds = pydicom.dcmread(dicom_bytes)
-    
-    return {
-        "PatientName": str(ds.get("PatientName")),
-        "Modality": str(ds.get("Modality"))
-    }
+@app.get("/health", tags=["Health"])
+def health():
+    try:
+        r = httpx.get(f"{ORTHANC_URL}/system", auth=orthanc_auth(), timeout=5)
+        pacs_ok = r.status_code == 200
+    except Exception:
+        pacs_ok = False
+    return {"api": "ok", "pacs_reachable": pacs_ok}

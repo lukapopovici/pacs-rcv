@@ -1,22 +1,56 @@
-services:
-  orthanc:
-    image: orthancteam/orthanc:latest
-    ports:
-      - "8042:8042"   # REST API / web UI
-      - "4242:4242"   # DICOM via C convention
-    volumes:
-      - orthanc-data:/var/lib/orthanc/db
-    restart: unless-stopped
+version: "3.9"
 
+services:
+
+  # ── FastAPI app ──────────────────────────────────────────────────────────
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.api
     ports:
       - "8000:8000"
+    env_file: .env
     environment:
       - ORTHANC_URL=http://orthanc:8042
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
+      - redis
+      - orthanc
+    volumes:
+      - ./app:/app/app   # live reload in dev
+    restart: unless-stopped
+
+  # ── Celery worker ────────────────────────────────────────────────────────
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    env_file: .env
+    environment:
+      - ORTHANC_URL=http://orthanc:8042
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
       - orthanc
     restart: unless-stopped
 
+  # ── Redis (broker + result backend) ─────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # ── Orthanc (local PACS for dev/staging) ────────────────────────────────
+  orthanc:
+    image: orthancteam/orthanc:latest
+    ports:
+      - "8042:8042"   # HTTP API
+      - "4242:4242"   # DICOM port
+    volumes:
+      - orthanc_data:/var/lib/orthanc/db
+      - ./orthanc.json:/etc/orthanc/orthanc.json:ro
+    restart: unless-stopped
+
 volumes:
-  orthanc-data:
+  orthanc_data:
