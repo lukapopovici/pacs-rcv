@@ -11,3 +11,10 @@ uv sync   # or uv add -r requirements.txt
 uv lock
 
 ```
+
+run with uv:
+
+```
+uv run python script.py
+uv run pytest
+```

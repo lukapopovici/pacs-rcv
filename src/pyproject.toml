@@ -3,5 +3,14 @@ name = "src"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = []
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "celery==5.3.6",
+    "fastapi==0.111.0",
+    "httpx==0.27.0",
+    "pydantic==2.7.1",
+    "pydicom==2.4.4",
+    "python-multipart==0.0.9",
+    "redis==5.0.4",
+    "uvicorn[standard]==0.29.0",
+]
