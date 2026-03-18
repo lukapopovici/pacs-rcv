@@ -1,9 +1,9 @@
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Depends
-from app.config import ORTHANC_URL, ORTHANC_USER, ORTHANC_PASS
-from app.auth import verify_token
-from app.jobs import create_job
-from app.worker import process_upload_task
+from src.config import ORTHANC_URL, ORTHANC_USER, ORTHANC_PASS
+from src.auth import verify_token
+from src.jobs import create_job
+from src.worker import process_upload_task
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
 

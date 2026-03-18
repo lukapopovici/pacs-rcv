@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
-from app.config import ORTHANC_URL, ORTHANC_USER, ORTHANC_PASS
+from src.config import ORTHANC_URL, ORTHANC_USER, ORTHANC_PASS
 
 
 class ForwardRequest(BaseModel):

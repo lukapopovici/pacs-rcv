@@ -1,8 +1,8 @@
 import httpx
 from fastapi import APIRouter, HTTPException, Depends
-from app.config import ORTHANC_URL, orthanc_auth
-from app.auth import verify_token
-from app.dicom_utils import dicom_bytes_to_dataset
+from src.config import ORTHANC_URL, orthanc_auth
+from src.auth import verify_token
+from src.dicom_utils import dicom_bytes_to_dataset
 
 router = APIRouter(prefix="/instances", tags=["Instances"])
 

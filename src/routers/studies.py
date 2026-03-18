@@ -1,7 +1,7 @@
 import httpx
 from fastapi import APIRouter, HTTPException, Depends
-from app.config import ORTHANC_URL, orthanc_auth
-from app.auth import verify_token
+from src.config import ORTHANC_URL, orthanc_auth
+from src.auth import verify_token
 
 router = APIRouter(prefix="/studies", tags=["Studies"])
 

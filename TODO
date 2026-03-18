@@ -1,1 +1,13 @@
 Actually make dockerfiles for api + celery wroker
+
+
+utility to alias: 
+
+```
+rm -rf .venv uv.lock
+
+uv venv --python 3.12
+uv sync   # or uv add -r requirements.txt
+uv lock
+
+```

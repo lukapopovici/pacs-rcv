@@ -1,9 +1,9 @@
 import uuid
 import httpx
 from fastapi import APIRouter, HTTPException, Depends
-from app.auth import verify_token
-from app.models import PACSConfig
-from app.jobs import PACS_CONFIGS
+from src.auth import verify_token
+from src.models import PACSConfig
+from src.jobs import PACS_CONFIGS
 
 router = APIRouter(prefix="/admin/pacs", tags=["Admin"])
 

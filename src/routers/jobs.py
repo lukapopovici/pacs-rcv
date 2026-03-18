@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.auth import verify_token
-from app.jobs import JOBS
+from src.auth import verify_token
+from src.jobs import JOBS
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 

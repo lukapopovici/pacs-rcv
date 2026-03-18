@@ -3,8 +3,8 @@ import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import ORTHANC_URL, orthanc_auth
-from app.routers import studies, instances, upload, forward, jobs, admin
+from src.config import ORTHANC_URL, orthanc_auth
+from src.routers import studies, instances, upload, forward, jobs, admin
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 

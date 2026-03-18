@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
-from app.auth import verify_token
-from app.models import ForwardRequest
-from app.jobs import create_job
-from app.worker import forward_study_task
-from app.config import ORTHANC_URL
+from src.auth import verify_token
+from src.models import ForwardRequest
+from src.jobs import create_job
+from src.worker import forward_study_task
+from src.config import ORTHANC_URL
 
 router = APIRouter(prefix="/forward", tags=["Forward"])
 
