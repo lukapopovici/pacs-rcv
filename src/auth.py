@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.config import API_SECRET
+from src.config import API_SECRET
 
 security = HTTPBearer(auto_error=False)
 

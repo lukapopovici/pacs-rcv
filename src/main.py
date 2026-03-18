@@ -9,8 +9,8 @@ from src.routers import studies, instances, upload, forward, jobs, admin
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 app = FastAPI(
-    title="MSV-med PACS API",
-    description="Upload, forward, anonymize, and query DICOM studies via Orthanc.",
+    title="Dicom API",
+    description="Dicom Database endpoint",
     version="1.0.0",
 )
 

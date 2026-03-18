@@ -1,9 +1,9 @@
 import logging
 import httpx
 from celery import Celery
-from app.config import REDIS_URL, orthanc_auth
-from app.jobs import update_job
-from app.dicom_utils import (
+from src.config import REDIS_URL, orthanc_auth
+from src.jobs import update_job
+from src.dicom_utils import (
     dicom_bytes_to_dataset, dataset_to_bytes,
     anonymize_dataset, embed_examination_result,
 )
