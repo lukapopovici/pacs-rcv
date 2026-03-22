@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.config import ORTHANC_URL, orthanc_auth
-from src.routers import studies, instances, upload, forward, jobs, admin
+from src.routers import studies, instances, upload, forward, jobs, admin, query
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -27,6 +27,7 @@ app.include_router(upload.router)
 app.include_router(forward.router)
 app.include_router(jobs.router)
 app.include_router(admin.router)
+app.include_router(query.router)
 
 
 @app.get("/", tags=["Health"])

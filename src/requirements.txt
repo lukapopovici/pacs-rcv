@@ -6,3 +6,7 @@ celery==5.3.6
 redis==5.0.4
 pydantic==2.7.1
 python-multipart==0.0.9
+sqlalchemy==2.0.30
+psycopg2-binary==2.9.9
+pgvector==0.2.5
+sentence-transformers==2.7.0
