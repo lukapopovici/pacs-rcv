@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+# X11 + OpenGL dependencies needed by DearPyGui
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libxcursor1 \
+    libxinerama1 \
+    libxi6 \
+    libxrandr2 \
+    libxxf86vm1 \
+    libglfw3 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir dearpygui httpx pydicom
+
+COPY gui.py .
+
+# GUI needs access to the host display via X11
+CMD ["python", "gui.py"]

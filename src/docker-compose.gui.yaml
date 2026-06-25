@@ -1,0 +1,17 @@
+gui:
+    build:
+      context: .
+      dockerfile: Dockerfile.gui
+    environment:
+      - DISPLAY=${DISPLAY}           
+      - API_URL=http://api:8000
+      - API_TOKEN=${API_SECRET:-changeme}
+      - ORTHANC_URL=http://orthanc:8042
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw   
+    depends_on:
+      - api
+      - orthanc
+    network_mode: host   
+    profiles:
+      - gui  
