@@ -9,10 +9,10 @@ import httpx
 import logging
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Depends
-from app.auth import verify_token
-from app.models import PACSConfig
-from app.jobs import JOBS, PACS_CONFIGS
-from app.config import ORTHANC_URL, ORTHANC_USER, ORTHANC_PASS, REDIS_URL, orthanc_auth
+from src.auth import verify_token
+from src.models import PACSConfig
+from src.jobs import JOBS, PACS_CONFIGS
+from src.config import ORTHANC_URL, ORTHANC_USER, ORTHANC_PASS, REDIS_URL, orthanc_auth
 
 logger = logging.getLogger("msv-med.admin")
 
@@ -203,8 +203,8 @@ def retry_job(job_id: str, _token=Depends(verify_token)):
     if job["status"] not in ("failed", "completed_with_errors"):
         raise HTTPException(status_code=400, detail=f"Cannot retry job with status '{job['status']}'")
 
-    from app.jobs import create_job
-    from app.worker import process_upload_task, forward_study_task
+    from src.jobs import create_job
+    from src.worker import process_upload_task, forward_study_task
 
     params = job.get("params", {})
     new_job = create_job(job["type"], params)
@@ -266,7 +266,7 @@ def worker_health(_token=Depends(verify_token)):
     Returns active workers and their active tasks.
     """
     try:
-        from app.worker import celery_app
+        from src.worker import celery_app
         inspect = celery_app.control.inspect(timeout=3)
         active  = inspect.active()  or {}
         stats   = inspect.stats()   or {}
