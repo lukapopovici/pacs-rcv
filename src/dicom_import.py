@@ -18,12 +18,12 @@ import httpx
 import pydicom
 from pydicom.errors import InvalidDicomError
 
-# ── Config ────────────────────────────────────────────────────────────────────
+                                                                                
 DEFAULT_ORTHANC  = os.getenv("ORTHANC_URL",  "http://localhost:8042")
 DEFAULT_USER     = os.getenv("ORTHANC_USER", "orthanc")
 DEFAULT_PASS     = os.getenv("ORTHANC_PASS", "orthanc")
 
-# ── ANSI colors ───────────────────────────────────────────────────────────────
+                                                                                
 GREEN  = "\033[92m"
 RED    = "\033[91m"
 YELLOW = "\033[93m"
@@ -36,15 +36,15 @@ def err(msg):   print(f"  {RED}✗{RESET} {msg}")
 def warn(msg):  print(f"  {YELLOW}!{RESET} {msg}")
 def info(msg):  print(f"  {CYAN}→{RESET} {msg}")
 
-# ── DICOM detection ───────────────────────────────────────────────────────────
+                                                                                
 DICOM_EXTENSIONS = {".dcm", ".dicom", ".dic"}
 
 def is_dicom(path: Path) -> bool:
     """Return True if the file is a valid DICOM file."""
-    # Fast check: known extension
+                                 
     if path.suffix.lower() in DICOM_EXTENSIONS:
         return True
-    # Slow check: try to read the file header (handles files without extension)
+                                                                               
     try:
         pydicom.dcmread(str(path), stop_before_pixels=True, force=False)
         return True
@@ -77,14 +77,14 @@ def scan_folder(folder: Path, check_content: bool = False) -> list[Path]:
             elif f.suffix.lower() in DICOM_EXTENSIONS:
                 found.append(f)
 
-        # Progress indicator every 100 files
+                                            
         if (i + 1) % 100 == 0:
             print(f"\r  Checked {i+1}/{total} files, found {len(found)} DICOM...", end="", flush=True)
 
     print(f"\r  Checked {total}/{total} files.{' ' * 20}")
     return found
 
-# ── Orthanc upload ────────────────────────────────────────────────────────────
+                                                                                
 def test_orthanc(orthanc_url: str, user: str, password: str) -> bool:
     try:
         r = httpx.get(f"{orthanc_url}/system", auth=(user, password), timeout=5)
@@ -117,14 +117,14 @@ def upload_file(path: Path, orthanc_url: str, user: str, password: str) -> dict:
     except Exception as e:
         return {"file": str(path), "status": "error", "error": str(e)}
 
-# ── Interactive confirmation ───────────────────────────────────────────────────
+                                                                                 
 def confirm_upload(files: list[Path], orthanc_url: str) -> bool:
     print(f"\n{BOLD}Summary:{RESET}")
     print(f"  DICOM files found : {CYAN}{len(files)}{RESET}")
     print(f"  Target Orthanc    : {CYAN}{orthanc_url}{RESET}")
     print()
 
-    # Show first 10 files as preview
+                                    
     preview = files[:10]
     for f in preview:
         print(f"    {f}")
@@ -135,7 +135,7 @@ def confirm_upload(files: list[Path], orthanc_url: str) -> bool:
     answer = input(f"  Upload all {len(files)} files to Orthanc? [{GREEN}y{RESET}/{RED}n{RESET}]: ").strip().lower()
     return answer in ("y", "yes")
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+                                                                                
 def main():
     parser = argparse.ArgumentParser(
         description="Recursively scan a folder for DICOM files and upload to Orthanc."
@@ -158,7 +158,7 @@ def main():
     print(f"\n{BOLD}{CYAN}MSV-med DICOM Importer{RESET}")
     print("─" * 40)
 
-    # Test Orthanc connectivity (skip in dry-run)
+                                                 
     if not args.dry_run:
         info(f"Testing Orthanc at {args.orthanc}...")
         if test_orthanc(args.orthanc, args.user, args.password):
@@ -167,7 +167,7 @@ def main():
             err(f"Cannot reach Orthanc at {args.orthanc}. Check URL and credentials.")
             sys.exit(1)
 
-    # Scan
+          
     files = scan_folder(folder, check_content=args.deep_scan)
 
     if not files:
@@ -182,13 +182,13 @@ def main():
             print(f"  {f}")
         sys.exit(0)
 
-    # Confirm
+             
     if not args.yes:
         if not confirm_upload(files, args.orthanc):
             print("  Aborted.")
             sys.exit(0)
 
-    # Upload
+            
     print(f"\n{BOLD}Uploading with {args.workers} worker(s)...{RESET}\n")
     results = {"ok": 0, "duplicate": 0, "failed": 0, "error": 0}
     start = time.time()
@@ -215,7 +215,7 @@ def main():
 
     elapsed = time.time() - start
 
-    # Summary
+             
     print(f"\n{'─' * 40}")
     print(f"{BOLD}Done in {elapsed:.1f}s{RESET}")
     print(f"  {GREEN}Uploaded : {results['ok']}{RESET}")

@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-# ── Config ──────────────────────────────────────────────
 APP_DIR="/opt/dicom-api"
 
 echo "==> Installing Docker..."

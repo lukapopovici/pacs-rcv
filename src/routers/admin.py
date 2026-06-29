@@ -19,7 +19,7 @@ logger = logging.getLogger("msv-med.admin")
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
-# ── PACS config CRUD ──────────────────────────────────────────────────────────
+                                                                                
 
 @router.post("/pacs")
 def add_pacs(config: PACSConfig, _token=Depends(verify_token)):
@@ -68,14 +68,14 @@ def test_pacs(pacs_id: str, _token=Depends(verify_token)):
         return {"reachable": False, "error": str(e)}
 
 
-# ── System stats ──────────────────────────────────────────────────────────────
+                                                                                
 
 @router.get("/stats")
 def system_stats(_token=Depends(verify_token)):
     """
     Overview of system health: job counts, PACS status, Redis, DB record count.
     """
-    # Job statistics
+                    
     all_jobs = list(JOBS.values())
     total_jobs     = len(all_jobs)
     completed      = sum(1 for j in all_jobs if j["status"] == "completed")
@@ -84,11 +84,11 @@ def system_stats(_token=Depends(verify_token)):
     queued         = sum(1 for j in all_jobs if j["status"] == "queued")
     processing     = sum(1 for j in all_jobs if j["status"] == "processing")
 
-    # Success rate
+                  
     finished = completed + with_errors + failed
     success_rate = round((completed / finished * 100), 1) if finished > 0 else None
 
-    # Total instances processed
+                               
     total_instances = sum(
         len(j.get("instances", [])) for j in all_jobs
     )
@@ -96,14 +96,14 @@ def system_stats(_token=Depends(verify_token)):
         len(j.get("errors", [])) for j in all_jobs
     )
 
-    # Jobs in last 24h
+                      
     cutoff = datetime.utcnow() - timedelta(hours=24)
     recent_jobs = [
         j for j in all_jobs
         if datetime.fromisoformat(j["created_at"]) > cutoff
     ]
 
-    # Orthanc status
+                    
     orthanc_info = {}
     try:
         r = httpx.get(f"{ORTHANC_URL}/system", auth=orthanc_auth(), timeout=4)
@@ -119,7 +119,7 @@ def system_stats(_token=Depends(verify_token)):
     except Exception as e:
         orthanc_info = {"reachable": False, "error": str(e)}
 
-    # Orthanc storage counts
+                            
     orthanc_counts = {}
     try:
         studies_r   = httpx.get(f"{ORTHANC_URL}/studies",   auth=orthanc_auth(), timeout=4)
@@ -131,7 +131,7 @@ def system_stats(_token=Depends(verify_token)):
     except Exception:
         orthanc_counts = {"studies": "?", "instances": "?"}
 
-    # Redis status
+                  
     redis_ok = False
     try:
         import redis as redis_lib
@@ -141,7 +141,7 @@ def system_stats(_token=Depends(verify_token)):
     except Exception:
         pass
 
-    # PACS configs
+                  
     pacs_count = len(PACS_CONFIGS)
 
     return {
@@ -164,7 +164,7 @@ def system_stats(_token=Depends(verify_token)):
     }
 
 
-# ── Job management ────────────────────────────────────────────────────────────
+                                                                                
 
 @router.delete("/jobs/{job_id}")
 def delete_job(job_id: str, _token=Depends(verify_token)):
@@ -226,7 +226,7 @@ def retry_job(job_id: str, _token=Depends(verify_token)):
     return {"original_job_id": job_id, "new_job_id": new_job["id"]}
 
 
-# ── Audit log ─────────────────────────────────────────────────────────────────
+                                                                                
 
 @router.get("/audit")
 def audit_log(limit: int = 50, status: str = None, _token=Depends(verify_token)):
@@ -257,7 +257,7 @@ def audit_log(limit: int = 50, status: str = None, _token=Depends(verify_token))
     ]
 
 
-# ── Worker health ─────────────────────────────────────────────────────────────
+                                                                                
 
 @router.get("/workers")
 def worker_health(_token=Depends(verify_token)):

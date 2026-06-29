@@ -2,7 +2,6 @@ version: "3.9"
 
 services:
 
-  # ── FastAPI app ──────────────────────────────────────────────────────────
   api:
     build:
       context: .
@@ -20,7 +19,6 @@ services:
       - ./app:/app/app   # live reload in dev
     restart: unless-stopped
 
-  # ── Celery worker ────────────────────────────────────────────────────────
   worker:
     build:
       context: .
@@ -34,14 +32,12 @@ services:
       - orthanc
     restart: unless-stopped
 
-  # ── Redis (broker + result backend) ─────────────────────────────────────
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     restart: unless-stopped
 
-  # ── Orthanc (local PACS for dev/staging) ────────────────────────────────
   orthanc:
     image: orthancteam/orthanc:latest
     ports:

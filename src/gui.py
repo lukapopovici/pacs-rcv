@@ -6,14 +6,14 @@ import os
 from pathlib import Path
 import dearpygui.dearpygui as dpg
 
-# ── Config ────────────────────────────────────────────────────────────────────
+                                                                                
 API_URL   = os.getenv("API_URL",    "http://localhost:8000")
 API_TOKEN = os.getenv("API_TOKEN",  "changeme")
 ORTHANC   = os.getenv("ORTHANC_URL","http://localhost:8042")
 
 HEADERS = {"Authorization": f"Bearer {API_TOKEN}"}
 
-# ── State ─────────────────────────────────────────────────────────────────────
+                                                                                
 state = {
     "studies":        [],
     "jobs":           [],
@@ -27,7 +27,7 @@ state = {
     "workers":        [],
 }
 
-# ── HTTP helpers ──────────────────────────────────────────────────────────────
+                                                                                
 def api_get(path):
     try:
         r = httpx.get(f"{API_URL}{path}", headers=HEADERS, timeout=10)
@@ -69,7 +69,7 @@ def log(msg):
         current = dpg.get_value("log_box") or ""
         dpg.set_value("log_box", f"[{ts}] {msg}\n" + current)
 
-# ── Health ────────────────────────────────────────────────────────────────────
+                                                                                
 def check_health():
     def _do():
         data, err = api_get("/health")
@@ -88,7 +88,7 @@ def check_health():
             dpg.configure_item("health_pacs", color=[60,200,100] if pacs_ok else [220,60,60])
     threading.Thread(target=_do, daemon=True).start()
 
-# ── Studies tab ───────────────────────────────────────────────────────────────
+                                                                                
 def refresh_studies():
     def _do():
         set_status("Fetching studies...")
@@ -164,7 +164,7 @@ def ingest_all():
             log(f"Bulk ingest — ingested:{i} skipped:{s} failed:{f}")
     threading.Thread(target=_do, daemon=True).start()
 
-# ── Forward dialog ────────────────────────────────────────────────────────────
+                                                                                
 def open_forward_dialog(study_id):
     if dpg.does_item_exist("forward_dialog"):
         dpg.delete_item("forward_dialog")
@@ -203,7 +203,7 @@ def _submit_forward(study_id):
             log(f"Forward job: {data.get('job_id')}")
     threading.Thread(target=_do, daemon=True).start()
 
-# ── Jobs tab ──────────────────────────────────────────────────────────────────
+                                                                                
 def refresh_jobs():
     def _do():
         data, err = api_get("/jobs")
@@ -257,7 +257,7 @@ def _show_job_detail(job):
             text += f"  - {json.dumps(e)}\n"
     dpg.set_value("job_detail_text", text)
 
-# ── Search tab ────────────────────────────────────────────────────────────────
+                                                                                
 def do_search():
     query    = dpg.get_value("search_query")
     modality = dpg.get_value("search_modality").strip() or None
@@ -290,7 +290,7 @@ def _rebuild_search_table():
             dpg.add_text((r.get("image_comments")    or "")[:50])
             dpg.add_text(str(r.get("instance_count") or "-"))
 
-# ── Admin tab ─────────────────────────────────────────────────────────────────
+                                                                                
 def refresh_admin():
     """Refresh all admin sections in parallel."""
     threading.Thread(target=_fetch_stats,   daemon=True).start()
@@ -484,19 +484,19 @@ def _purge_jobs(status_filter):
             _fetch_stats()
     threading.Thread(target=_do, daemon=True).start()
 
-# ── Auto-refresh ──────────────────────────────────────────────────────────────
+                                                                                
 def _auto_refresh():
     while True:
         time.sleep(10)
         check_health()
 
-# ── Main GUI ──────────────────────────────────────────────────────────────────
+                                                                                
 def main():
     dpg.create_context()
 
     with dpg.window(tag="main_window", label="MSV-med — PACS Manager"):
 
-        # Top bar
+                 
         with dpg.group(horizontal=True):
             dpg.add_text("MSV-med PACS Manager", color=[120, 180, 255])
             dpg.add_spacer(width=30)
@@ -508,8 +508,8 @@ def main():
 
         with dpg.tab_bar():
 
-            # ══ STUDIES ═══════════════════════════════════════════════════════
-            with dpg.tab(label="📋  Studies"):
+                                                                                
+            with dpg.tab(label="Studies"):
                 with dpg.group(horizontal=True):
                     dpg.add_button(label="Refresh", callback=refresh_studies, width=100)
                     dpg.add_button(label="Ingest All → AI", callback=ingest_all, width=130)
@@ -531,8 +531,8 @@ def main():
                                            readonly=True, width=410, height=450,
                                            default_value="Select a study.")
 
-            # ══ JOBS ══════════════════════════════════════════════════════════
-            with dpg.tab(label="⚙️  Jobs"):
+                                                                                
+            with dpg.tab(label="Jobs"):
                 with dpg.group(horizontal=True):
                     dpg.add_button(label="Refresh", callback=refresh_jobs, width=100)
                 dpg.add_spacer(height=6)
@@ -553,8 +553,8 @@ def main():
                                            readonly=True, width=410, height=450,
                                            default_value="Click Details on a job.")
 
-            # ══ AI SEARCH ════════════════════════════════════════════════════
-            with dpg.tab(label="🔍  AI Search"):
+                                                                               
+            with dpg.tab(label="AI Search"):
                 dpg.add_text("Semantic search over indexed studies", color=[180,180,180])
                 dpg.add_spacer(height=6)
                 with dpg.group(horizontal=True):
@@ -571,15 +571,15 @@ def main():
                                    policy=dpg.mvTable_SizingStretchProp):
                         pass
 
-            # ══ ADMIN ════════════════════════════════════════════════════════
-            with dpg.tab(label="🛠️  Admin"):
+                                                                               
+            with dpg.tab(label="Admin"):
                 with dpg.group(horizontal=True):
                     dpg.add_button(label="Refresh All", callback=refresh_admin, width=110)
                 dpg.add_spacer(height=8)
 
                 with dpg.tab_bar(tag="admin_tabs"):
 
-                    # ── Overview ─────────────────────────────────────────────
+                                                                               
                     with dpg.tab(label="Overview"):
                         with dpg.group(horizontal=True):
                             with dpg.child_window(width=340, height=420, border=True):
@@ -596,7 +596,7 @@ def main():
                                                    readonly=True, width=660, height=380,
                                                    default_value="Click Refresh All.")
 
-                    # ── PACS Config ──────────────────────────────────────────
+                                                                               
                     with dpg.tab(label="PACS Config"):
                         with dpg.group(horizontal=True):
                             dpg.add_button(label="Add PACS", callback=_open_add_pacs_dialog, width=100)
@@ -609,7 +609,7 @@ def main():
                                            policy=dpg.mvTable_SizingFixedFit):
                                 pass
 
-                    # ── Audit Log ────────────────────────────────────────────
+                                                                               
                     with dpg.tab(label="Audit Log"):
                         with dpg.group(horizontal=True):
                             dpg.add_button(label="Refresh",             callback=_fetch_audit,                    width=90)
@@ -624,8 +624,8 @@ def main():
                                            policy=dpg.mvTable_SizingStretchProp):
                                 pass
 
-            # ══ LOG ══════════════════════════════════════════════════════════
-            with dpg.tab(label="📝  Log"):
+                                                                               
+            with dpg.tab(label="Log"):
                 dpg.add_text("Activity Log", color=[180,180,180])
                 dpg.add_separator()
                 dpg.add_input_text(tag="log_box", multiline=True, readonly=True,

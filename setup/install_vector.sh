@@ -1,4 +1,3 @@
-#default setup script for ubuntu 
 sudo apt install postgresql-16-pgvector
 
 sudo -u postgres psql -d msvmed -c "CREATE EXTENSION IF NOT EXISTS vector;"
