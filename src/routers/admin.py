@@ -1,8 +1,3 @@
-"""
-admin.py — Admin panel endpoints.
-Covers: PACS config CRUD, system stats, job management, audit log, worker health.
-"""
-
 import uuid
 import time
 import httpx
@@ -72,9 +67,6 @@ def test_pacs(pacs_id: str, _token=Depends(verify_token)):
 
 @router.get("/stats")
 def system_stats(_token=Depends(verify_token)):
-    """
-    Overview of system health: job counts, PACS status, Redis, DB record count.
-    """
                     
     all_jobs = list(JOBS.values())
     total_jobs     = len(all_jobs)
@@ -177,10 +169,6 @@ def delete_job(job_id: str, _token=Depends(verify_token)):
 
 @router.delete("/jobs")
 def purge_jobs(status: str = None, _token=Depends(verify_token)):
-    """
-    Bulk delete jobs. Optional ?status= filter (completed, failed, etc.).
-    Without filter, deletes ALL jobs.
-    """
     if status:
         to_delete = [jid for jid, j in JOBS.items() if j["status"] == status]
     else:
@@ -193,10 +181,6 @@ def purge_jobs(status: str = None, _token=Depends(verify_token)):
 
 @router.post("/jobs/{job_id}/retry")
 def retry_job(job_id: str, _token=Depends(verify_token)):
-    """
-    Re-queue a failed job by re-enqueuing it with the original params.
-    Only works for jobs with status 'failed'.
-    """
     job = JOBS.get(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -230,10 +214,6 @@ def retry_job(job_id: str, _token=Depends(verify_token)):
 
 @router.get("/audit")
 def audit_log(limit: int = 50, status: str = None, _token=Depends(verify_token)):
-    """
-    Returns a chronological audit log derived from the job store.
-    Each entry represents one job with key metadata.
-    """
     jobs = list(JOBS.values())
 
     if status:

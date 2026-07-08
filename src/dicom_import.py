@@ -1,12 +1,3 @@
-"""
-dicom_import.py — Recursively scan a folder for DICOM files and upload to Orthanc.
-Usage:
-    python dicom_import.py /path/to/folder
-    python dicom_import.py /path/to/folder --orthanc http://localhost:8042
-    python dicom_import.py /path/to/folder --dry-run
-    python dicom_import.py /path/to/folder --workers 4
-"""
-
 import argparse
 import os
 import sys
@@ -40,7 +31,6 @@ def info(msg):  print(f"  {CYAN}→{RESET} {msg}")
 DICOM_EXTENSIONS = {".dcm", ".dicom", ".dic"}
 
 def is_dicom(path: Path) -> bool:
-    """Return True if the file is a valid DICOM file."""
                                  
     if path.suffix.lower() in DICOM_EXTENSIONS:
         return True
@@ -52,11 +42,6 @@ def is_dicom(path: Path) -> bool:
         return False
 
 def scan_folder(folder: Path, check_content: bool = False) -> list[Path]:
-    """
-    Recursively find all DICOM files in folder.
-    check_content=True: verify every file by reading header (slower, more accurate).
-    check_content=False: trust extensions only (fast, misses extensionless files).
-    """
     found = []
     all_files = list(folder.rglob("*"))
     total = len(all_files)
@@ -93,7 +78,6 @@ def test_orthanc(orthanc_url: str, user: str, password: str) -> bool:
         return False
 
 def upload_file(path: Path, orthanc_url: str, user: str, password: str) -> dict:
-    """Upload a single DICOM file to Orthanc. Returns result dict."""
     try:
         with open(path, "rb") as f:
             data = f.read()

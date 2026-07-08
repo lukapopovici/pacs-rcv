@@ -1,17 +1,3 @@
-"""
-query.py — AI indexing and semantic search over DICOM studies.
-
-Architecture:
-    SearchStrategy (ABC)
-        ├── CosineSearchStrategy      — pgvector cosine distance
-        ├── EuclideanSearchStrategy   — pgvector L2 distance
-        ├── FullTextSearchStrategy    — PostgreSQL tsvector full-text
-        └── HybridSearchStrategy      — cosine + full-text combined
-
-    DicomStudyRepository              — all DB access in one place
-    SearchStrategyFactory             — picks strategy by name at runtime
-    router endpoints                  — thin, delegate to repo + strategy
-"""
 
 import os
 import logging
@@ -93,10 +79,6 @@ def get_db():
                                                                                 
 
 class DicomStudyRepository:
-    """
-    Single point of access for all DB operations on DicomStudyRecord.
-    Swap the underlying store (e.g. MongoDB, Elasticsearch) here only.
-    """
 
     def __init__(self, db: Session):
         self.db = db
@@ -138,24 +120,13 @@ class DicomStudyRepository:
                                                                                 
 
 class SearchStrategy(ABC):
-    """
-    Abstract base for all search strategies.
-    Add a new querying method by subclassing this and registering
-    it in SearchStrategyFactory — no other file needs to change.
-    """
 
     @abstractmethod
     def search(self, db: Session, query: str, limit: int,
                modality: str = None) -> list[dict]:
-        """
-        Execute the search and return a list of result dicts.
-        Each dict must contain at least: id, orthanc_study_id,
-        modality, study_date, study_description, image_comments, instance_count.
-        """
         ...
 
     def _base_filters(self, q, modality: str = None):
-        """Apply common filters shared across strategies."""
         if modality:
             q = q.filter(DicomStudyRecord.modality == modality.upper())
         return q
@@ -178,11 +149,7 @@ class SearchStrategy(ABC):
 
 
 class CosineSearchStrategy(SearchStrategy):
-    """
-    Semantic similarity via pgvector cosine distance.
-    Best for: natural language clinical queries.
-    Example: "CT torace cu noduli pulmonari"
-    """
+
 
     def search(self, db: Session, query: str, limit: int,
                modality: str = None) -> list[dict]:
@@ -221,11 +188,6 @@ class CosineSearchStrategy(SearchStrategy):
 
 
 class EuclideanSearchStrategy(SearchStrategy):
-    """
-    L2 (Euclidean) distance via pgvector.
-    Best for: when embeddings are not normalized and magnitude matters.
-    Example: clustering-style nearest neighbor search.
-    """
 
     def search(self, db: Session, query: str, limit: int,
                modality: str = None) -> list[dict]:
@@ -264,12 +226,7 @@ class EuclideanSearchStrategy(SearchStrategy):
 
 
 class FullTextSearchStrategy(SearchStrategy):
-    """
-    PostgreSQL full-text search via tsvector on study_description
-    and image_comments.
-    Best for: exact medical term matching, structured keyword queries.
-    Example: "pneumonie", "hepatomegalie"
-    """
+ 
 
     def search(self, db: Session, query: str, limit: int,
                modality: str = None) -> list[dict]:
@@ -316,12 +273,6 @@ class FullTextSearchStrategy(SearchStrategy):
 
 
 class HybridSearchStrategy(SearchStrategy):
-    """
-    Combines cosine semantic similarity with full-text rank using
-    a weighted sum: final_score = alpha * cosine + (1-alpha) * text_rank.
-    Best for: balancing semantic meaning with exact term matching.
-    alpha=1.0 → pure cosine; alpha=0.0 → pure full-text.
-    """
 
     def __init__(self, alpha: float = 0.7):
         self.alpha = alpha
@@ -368,10 +319,6 @@ class HybridSearchStrategy(SearchStrategy):
                                                                                 
 
 class SearchStrategyFactory:
-    """
-    Register new strategies here. The endpoint picks one by name.
-    Adding a new strategy = add a subclass above + one line here.
-    """
 
     _registry: dict[str, SearchStrategy] = {
         "cosine":    CosineSearchStrategy(),
@@ -460,7 +407,6 @@ def _ingest_study(study_id: str, db: Session) -> DicomStudyRecord:
 
 @router.get("/strategies", tags=["Query"])
 def list_strategies(_token=Depends(verify_token)):
-    """List all available search strategies."""
     return {
         "strategies": SearchStrategyFactory.available(),
         "descriptions": {
@@ -488,7 +434,6 @@ def query_studies(_token=Depends(verify_token), db: Session = Depends(get_db)):
 @router.post("/ingest/{study_id}", tags=["Query"])
 def ingest_study(study_id: str, _token=Depends(verify_token),
                  db: Session = Depends(get_db)):
-    """Ingest a single study from PACS into the vector DB. Idempotent."""
     record = _ingest_study(study_id, db)
     return {
         "id":               record.id,
@@ -500,7 +445,6 @@ def ingest_study(study_id: str, _token=Depends(verify_token),
 
 @router.post("/ingest/all", tags=["Query"])
 def ingest_all_studies(_token=Depends(verify_token), db: Session = Depends(get_db)):
-    """Ingest every study currently in PACS. Skips already-ingested ones."""
     r = httpx.get(f"{ORTHANC_URL}/studies", auth=orthanc_auth(), timeout=10)
     r.raise_for_status()
     study_ids    = r.json()
@@ -530,12 +474,6 @@ def search(
     _token=Depends(verify_token),
     db: Session = Depends(get_db),
 ):
-    """
-    Search indexed studies using the specified strategy.
-    Default is cosine semantic similarity.
-    Use ?strategy=fulltext for exact term matching,
-    ?strategy=hybrid for a combination of both.
-    """
     search_strategy = SearchStrategyFactory.get(strategy)
     results = search_strategy.search(db, q, limit, modality)
     return {"strategy": strategy, "count": len(results), "results": results}
@@ -549,7 +487,6 @@ def list_records(
     _token=Depends(verify_token),
     db: Session = Depends(get_db),
 ):
-    """List ingested records, paginated. Use for building ML training datasets."""
     total, records = DicomStudyRepository(db).list_all(modality, limit, offset)
     return {
         "total":   total,
@@ -576,7 +513,6 @@ def list_records(
 @router.get("/records/{record_id}", tags=["Query"])
 def get_record(record_id: int, _token=Depends(verify_token),
                db: Session = Depends(get_db)):
-    """Get a single ingested record by its DB id."""
     r = DicomStudyRepository(db).get_by_id(record_id)
     if not r:
         raise HTTPException(status_code=404, detail="Record not found")
@@ -599,7 +535,6 @@ def get_record(record_id: int, _token=Depends(verify_token),
 @router.delete("/records/{record_id}", tags=["Query"])
 def delete_record(record_id: int, _token=Depends(verify_token),
                   db: Session = Depends(get_db)):
-    """Remove a record from the vector DB. Does not touch Orthanc."""
     repo = DicomStudyRepository(db)
     r = repo.get_by_id(record_id)
     if not r:
