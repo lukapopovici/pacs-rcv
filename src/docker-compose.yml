@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   api:
@@ -15,8 +13,6 @@ services:
     depends_on:
       - redis
       - orthanc
-    volumes:
-      - ./app:/app/app   # live reload in dev
     restart: unless-stopped
 
   worker:
