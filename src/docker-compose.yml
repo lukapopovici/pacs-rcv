@@ -41,7 +41,7 @@ services:
       - "4242:4242"   # DICOM port
     volumes:
       - orthanc_data:/var/lib/orthanc/db
-      - ./orthanc.json:/etc/orthanc/orthanc.json:ro
+      - ./orthanc.json:/etc/orthanc/orthanc.json
     restart: unless-stopped
 
 volumes:

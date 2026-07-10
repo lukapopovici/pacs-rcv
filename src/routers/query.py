@@ -1,16 +1,17 @@
 
 import os
 import logging
+import hashlib
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional
 
 import httpx
+import numpy as np
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy import Column, String, DateTime, Text, JSON, Integer, create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from pgvector.sqlalchemy import Vector
-from fastembed import TextEmbedding
 
 from src.config import ORTHANC_URL, orthanc_auth
 from src.auth import verify_token
@@ -48,9 +49,6 @@ class DicomStudyRecord(Base):
 
                                                                                 
 
-embedder = TextEmbedding("sentence-transformers/all-MiniLM-L6-v2")
-
-
 def build_embedding_text(tags: dict) -> str:
     parts = [
         f"Modality: {tags.get('Modality', '')}",
@@ -63,7 +61,12 @@ def build_embedding_text(tags: dict) -> str:
 
 
 def compute_embedding(text: str) -> list[float]:
-    return list(embedder.embed([text]))[0].tolist()
+    """Generate deterministic embedding from text hash (demo/lightweight mode)."""
+    seed = int(hashlib.md5(text.encode()).hexdigest(), 16) % (2**32)
+    rng = np.random.default_rng(seed)
+    vec = rng.standard_normal(384).astype(np.float32)
+    vec = vec / np.linalg.norm(vec)  # normalize for cosine distance
+    return vec.tolist()
 
 
                                                                                 

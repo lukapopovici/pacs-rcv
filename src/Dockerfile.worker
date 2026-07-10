@@ -2,11 +2,13 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+ENV PYTHONPATH=/app:$PYTHONPATH
+
 RUN pip install --upgrade pip setuptools wheel
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY . src/
 
-CMD ["celery", "-A", "worker.celery_app", "worker", "--loglevel=info", "--concurrency=4"]
+CMD ["celery", "-A", "src.worker.celery_app", "worker", "--loglevel=info", "--concurrency=4"]
